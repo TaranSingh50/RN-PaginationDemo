@@ -1,10 +1,8 @@
-import React, { use, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   FlatList,
   ActivityIndicator,
-  StyleSheet,
 } from 'react-native';
 import { usePagination } from '../hooks/usePagination';
 import { fetchProducts, Product } from '../api/productApi';
@@ -12,7 +10,15 @@ import ProductItem from '../components/ProductItem'
 import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 export default function ProductListScreen() {
-  const { data, loadMore, loading, hasMore, error } = usePagination<Product>({
+  const { 
+    data,
+    loadMore,
+    refresh,
+    loading,
+    refreshing,
+    hasMore,
+    error, 
+  } = usePagination<Product>({
     apiFunction: fetchProducts,
     limit: 10,
   });
@@ -44,6 +50,8 @@ export default function ProductListScreen() {
           if (hasMore) loadMore();
         }}
         onEndReachedThreshold={0.5}
+        refreshing={refreshing} // 🔥 NEW
+        onRefresh={refresh}      // 🔥 NEW
         ListFooterComponent={
           loading ? <ActivityIndicator size="large" /> : null
         }
