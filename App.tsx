@@ -1,12 +1,12 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+   Lesson 18: Pagination API Pattern
+   Lesson 19: Pull to Refresh + Pagination
+   Lesson 20: Search + Pagination
+   Lesson 21: Debounced Search + Pagination
  */
 import React from 'react';
 import ProductListScreen from './src/screens/ProductListScreen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, useColorScheme} from 'react-native';
 import {
   SafeAreaProvider,
   SafeAreaView,
