@@ -11,10 +11,38 @@ interface UsePaginationProps<T> {
     limit: number,
     skip: number,
     search?: string,
+    signal?: AbortSignal,
   ) => Promise<PaginationResponse<T>>;
   limit?: number;
   search?: string;
 }
+
+/**
+ * 🔁 Generic Retry Helper
+ */
+const retryRequest = async <T>(
+  requestFun: () => Promise<T>,
+  retries: number = 3,
+  delay: number = 1000,
+): Promise<T> => {
+  try {
+    return await requestFun();
+  } catch (error: any) {
+    // ❌ Do not retry aborted requests
+    if (error.name === 'CanceledError' || error.name === 'AbortError') {
+      throw error;
+    }
+
+    if (retries <= 0) {
+      throw error;
+    }
+
+    // Wait before retrying
+    await new Promise<void>(resolve => setTimeout(() => resolve(), delay));
+
+    return retryRequest(requestFun, retries - 1, delay);
+  }
+};
 
 export const usePagination = <T>({
   apiFunction,
@@ -48,11 +76,8 @@ export const usePagination = <T>({
     const skip = page * limit;
 
     try {
-      const response = await apiFunction(
-        limit,
-        skip,
-        search,
-        controller.signal,
+      const response = await retryRequest(() =>
+        apiFunction(limit, skip, search, controller.signal),
       );
 
       setData(prev => [...prev, ...response.products]);
@@ -82,7 +107,9 @@ export const usePagination = <T>({
     setError(null); // reset previous error
 
     try {
-      const response = await apiFunction(limit, 0);
+      const response = await retryRequest(() => 
+        apiFunction(limit, 0, search)
+    );
 
       setData(response.products);
       setPage(1);
